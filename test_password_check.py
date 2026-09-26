@@ -4,7 +4,6 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import hibp_passwords
-import vaultcheck
 
 
 class TestPasswordPwned(unittest.TestCase):
@@ -17,7 +16,7 @@ class TestPasswordPwned(unittest.TestCase):
         mock_resp.status_code = 200
         mock_resp.text = body
         with patch("hibp_passwords.requests.get", return_value=mock_resp) as get:
-            count = vaultcheck.check_password_pwned(password)
+            count = hibp_passwords.check_password_pwned(password)
         self.assertEqual(count, 42)
         args, kwargs = get.call_args
         self.assertTrue(args[0].endswith(sha1[:5]))
@@ -29,7 +28,7 @@ class TestPasswordPwned(unittest.TestCase):
         mock_resp.status_code = 200
         mock_resp.text = "DEADB:9\nC0FFEE:2\n"
         with patch("hibp_passwords.requests.get", return_value=mock_resp):
-            count = vaultcheck.check_password_pwned(password)
+            count = hibp_passwords.check_password_pwned(password)
         self.assertEqual(count, 0)
 
     def test_only_prefix_sent(self):
