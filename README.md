@@ -23,8 +23,11 @@ python vaultcheck.py
 python vaultcheck.py emails.csv
 
 # Password check (only SHA-1 prefix leaves your machine)
-python vaultcheck.py --check-password
+python vaultcheck_password_cli.py
 ```
+
+Optional: apply `patches/001-wire-check-password-cli.patch` to expose the same
+flow as `python vaultcheck.py --check-password`.
 
 ## Privacy (password mode)
 
