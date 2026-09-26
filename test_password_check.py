@@ -3,6 +3,7 @@ import hashlib
 import unittest
 from unittest.mock import MagicMock, patch
 
+import hibp_passwords
 import vaultcheck
 
 
@@ -15,7 +16,7 @@ class TestPasswordPwned(unittest.TestCase):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.text = body
-        with patch("vaultcheck.requests.get", return_value=mock_resp) as get:
+        with patch("hibp_passwords.requests.get", return_value=mock_resp) as get:
             count = vaultcheck.check_password_pwned(password)
         self.assertEqual(count, 42)
         args, kwargs = get.call_args
@@ -24,15 +25,12 @@ class TestPasswordPwned(unittest.TestCase):
 
     def test_not_found(self):
         password = "unique-not-in-list-xyz"
-        sha1 = hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.text = "DEADB:9\nC0FFEE:2\n"
-        with patch("vaultcheck.requests.get", return_value=mock_resp):
+        with patch("hibp_passwords.requests.get", return_value=mock_resp):
             count = vaultcheck.check_password_pwned(password)
         self.assertEqual(count, 0)
-        # Full hash never appears in request URL — only 5-char prefix
-        self.assertNotIn(sha1, "https://api.pwnedpasswords.com/range/" + sha1[:5])
 
     def test_only_prefix_sent(self):
         password = "secret"
@@ -40,8 +38,8 @@ class TestPasswordPwned(unittest.TestCase):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.text = ""
-        with patch("vaultcheck.requests.get", return_value=mock_resp) as get:
-            vaultcheck.check_password_pwned(password)
+        with patch("hibp_passwords.requests.get", return_value=mock_resp) as get:
+            hibp_passwords.check_password_pwned(password)
         url = get.call_args[0][0]
         self.assertEqual(url, f"https://api.pwnedpasswords.com/range/{sha1[:5]}")
         self.assertNotIn(sha1[5:], url)
